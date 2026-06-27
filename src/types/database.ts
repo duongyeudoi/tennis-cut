@@ -29,22 +29,37 @@ export interface Clip {
   updated_at: string;
 }
 
-// Supabase Database generic type cho createClient<Database>
+// Supabase Database generic type — phải có đúng format này để createClient<Database> hoạt động
 export interface Database {
   public: {
     Tables: {
       jobs: {
         Row: Job;
-        Insert: Omit<Job, "id" | "created_at">;
+        Insert: Omit<Job, "created_at"> & { id?: string };
         Update: Partial<Omit<Job, "id" | "created_at">>;
+        Relationships: [];
       };
       clips: {
         Row: Clip;
-        Insert: Omit<Clip, "id" | "duration_sec" | "created_at" | "updated_at">;
+        Insert: Omit<Clip, "duration_sec" | "created_at" | "updated_at"> & {
+          id?: string;
+        };
         Update: Partial<
           Omit<Clip, "id" | "duration_sec" | "created_at" | "job_id">
         >;
+        Relationships: [
+          {
+            foreignKeyName: "clips_job_id_fkey";
+            columns: ["job_id"];
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
+          }
+        ];
       };
     };
+    Views: Record<never, never>;
+    Functions: Record<never, never>;
+    Enums: Record<never, never>;
+    CompositeTypes: Record<never, never>;
   };
 }

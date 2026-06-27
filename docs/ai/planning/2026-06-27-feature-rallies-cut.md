@@ -56,28 +56,28 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
 
 ### M2 — Luồng upload
 
-- [ ] **2.1 — Route tạo presigned upload URL**
+- [x] **2.1 — Route tạo presigned upload URL**
   - `GET /api/upload-url?filename=x&size=y` → trả presigned PUT URL cho bucket `rallies-raw`
   - Định dạng key: `raw/{uuid}/original{ext}`
   - Kết quả: curl với presigned URL PUT file thành công lên R2
   - Ước tính: 1 giờ
   - Phụ thuộc: 1.3, 1.4
 
-- [ ] **2.2 — Component VideoUpload**
+- [x] **2.2 — Component VideoUpload**
   - Zone kéo thả + file picker
   - Client-side: lấy presigned URL → PUT lên R2 bằng XHR (để có progress events)
   - Hiển thị thanh tiến trình upload (% bytes đã gửi)
   - Ước tính: 2–3 giờ
   - Phụ thuộc: 2.1
 
-- [ ] **2.3 — Tạo job trong Supabase sau khi upload**
+- [x] **2.3 — Tạo job trong Supabase sau khi upload**
   - Sau khi PUT R2 thành công, POST lên Supabase `jobs` với `raw_video_key` và `status: 'pending'`
   - Chuyển hướng đến `/jobs/[id]`
   - Kết quả: Row xuất hiện trong bảng `jobs` với status `pending`
   - Ước tính: 1 giờ
   - Phụ thuộc: 2.2, 1.2
 
-- [ ] **2.4 — UI trang upload**
+- [x] **2.4 — UI trang upload**
   - `app/page.tsx` — card upload căn giữa, hướng dẫn, danh sách job gần đây
   - Tailwind styling — gọn, thân thiện mobile
   - Ước tính: 1–2 giờ
