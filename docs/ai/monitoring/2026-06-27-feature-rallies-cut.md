@@ -1,75 +1,78 @@
 ---
 phase: monitoring
 title: Giám sát & Quan sát hệ thống
-description: Định nghĩa chiến lược giám sát, metrics, alerts và xử lý sự cố
+description: Monitoring MVP đơn giản — logs, Supabase dashboard, không cần stack phức tạp
 ---
 
 # Giám sát & Quan sát hệ thống
 
-## Metrics chính
-**Cần theo dõi những gì?**
+## Triết lý monitoring (MVP)
 
-### Metrics hiệu suất
-- Thời gian phản hồi/độ trễ
-- Throughput/request per second
-- Sử dụng tài nguyên (CPU, bộ nhớ, ổ đĩa)
+Người dùng duy nhất là chính tác giả. Không cần alerting phức tạp. Chỉ cần đủ thông tin để debug khi có vấn đề.
 
-### Metrics nghiệp vụ
-- Metrics tương tác người dùng
-- Tỷ lệ chuyển đổi/thành công
-- Mức độ sử dụng tính năng
+## Worker logs
 
-### Metrics lỗi
-- Tỷ lệ lỗi theo loại
-- Request thất bại
-- Theo dõi exception
+Worker in log ra stdout. Chạy nền:
+```bash
+nohup python main.py > worker.log 2>&1 &
+tail -f worker.log
+```
 
-## Công cụ giám sát
-**Đang dùng công cụ gì?**
+Log levels được dùng:
+- `INFO` — job picked up, bước xử lý, upload xong
+- `WARNING` — clip thất bại nhưng job vẫn tiếp tục
+- `ERROR` — job fail hoàn toàn, exception từ Gemini/FFmpeg/R2
 
-- Giám sát ứng dụng (APM)
-- Giám sát hạ tầng
-- Tổng hợp log
-- Analytics người dùng
+Tìm lỗi nhanh:
+```bash
+grep ERROR worker.log | tail -20
+grep "Job.*failed" worker.log
+```
 
-## Chiến lược logging
-**Log gì và log như thế nào?**
+## Supabase Dashboard
 
-- Mức độ và danh mục log
-- Định dạng structured logging
-- Chính sách lưu giữ log
-- Xử lý dữ liệu nhạy cảm
+Xem trực tiếp tại [app.supabase.com](https://app.supabase.com):
+- **Table Editor** → `jobs`: xem trạng thái tất cả jobs
+- **Table Editor** → `clips`: xem clips của một job
+- **Logs** → Postgres: query logs nếu có vấn đề DB
 
-## Alerts & Thông báo
-**Khi nào và cách nào được thông báo?**
+Query hữu ích:
+```sql
+-- Jobs bị stuck processing > 1 tiếng
+SELECT id, status, created_at FROM jobs
+WHERE status = 'processing'
+  AND created_at < NOW() - INTERVAL '1 hour';
 
-### Alerts nghiêm trọng
-- Alert 1: [Điều kiện] → [Hành động]
-- Alert 2: [Điều kiện] → [Hành động]
+-- Reset stuck job thủ công
+UPDATE jobs SET status = 'pending' WHERE id = '...';
+```
 
-### Alerts cảnh báo
-- Alert 1: [Điều kiện] → [Hành động]
-- Alert 2: [Điều kiện] → [Hành động]
+## Cloudflare R2
 
-## Dashboards
-**Trực quan hoá gì?**
+Dashboard R2 hiện:
+- Dung lượng đã dùng (theo dõi để không vượt free tier 10GB)
+- Số objects
 
-- Dashboard sức khoẻ hệ thống
-- Dashboard metrics nghiệp vụ
-- View tuỳ chỉnh theo nhóm/vai trò
+Dọn dẹp thủ công nếu cần:
+- Bucket `rallies-raw`: xóa sau khi job done (worker xóa tự động, nhưng có thể check)
+- Bucket `rallies-clips`: giữ lại clips đã xử lý
 
-## Xử lý sự cố
-**Xử lý vấn đề như thế nào?**
+## Gemini API
 
-### Quy trình xử lý sự cố
-1. Phát hiện và phân loại
-2. Điều tra và chẩn đoán
-3. Giải quyết và giảm thiểu
-4. Post-mortem và rút kinh nghiệm
+Theo dõi tại [aistudio.google.com](https://aistudio.google.com):
+- Quota sử dụng hàng ngày
+- Nếu 429 (rate limit) → worker sẽ log ERROR và job failed → retry sau
 
-## Health Checks
-**Xác minh sức khoẻ hệ thống như thế nào?**
+## Sự cố thường gặp
 
-- Kiểm tra health endpoint
-- Kiểm tra dependency
-- Smoke test tự động
+| Triệu chứng | Nguyên nhân thường gặp | Xử lý |
+|---|---|---|
+| Job stuck `processing` | Worker bị kill giữa chừng | Nút Hủy UI hoặc UPDATE SQL |
+| Job `failed` ngay | Gemini 404/429, FFmpeg crash | Xem `worker.log`, nút Retry |
+| Gallery trống sau done | Upload clip lên R2 thất bại | Xem `worker.log` dòng ERROR |
+| Video không phát | Clip encode sai codec | Xem thumbnail, thử reextract |
+| Login loop | Cookie Supabase hết hạn | Clear cookies trình duyệt |
+
+## Không dùng
+
+Không cần Sentry, Datadog, Prometheus, hay bất kỳ observability stack nào cho MVP single-user này.
