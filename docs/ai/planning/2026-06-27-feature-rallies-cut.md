@@ -10,7 +10,7 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
 
 - [x] **M1 — Scaffold dự án & hạ tầng** — Next.js app + Supabase schema + R2 buckets kết nối xong
 - [x] **M2 — Luồng upload** — Upload kéo thả lên R2 với tiến trình, job được tạo trong DB
-- [ ] **M3 — Python worker chạy local** — Poll jobs, nhận diện rally với OpenCV/YOLO, cắt bằng FFmpeg, upload clip
+- [x] **M3 — Python worker chạy local** — Poll jobs, nhận diện rally với OpenCV/YOLO, cắt bằng FFmpeg, upload clip
 - [x] **M4 — Gallery rally & player** — Xem clip đã xử lý trên trình duyệt, cập nhật trạng thái realtime
 - [x] **M5 — Chia sẻ qua link** — Trang chia sẻ công khai cho một rally, không cần đăng nhập
 - [x] **M6 — Clip editor** — Chỉnh sửa in/out point thủ công với ngữ cảnh footage gốc, worker cắt lại
@@ -89,21 +89,21 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
 
 ### M3 — Python Worker chạy local
 
-- [ ] **3.1 — Scaffold project worker**
+- [x] **3.1 — Scaffold project worker**
   - Thư mục `worker/` với `main.py`, `requirements.txt`
   - Dependencies: `opencv-python-headless`, `ultralytics`, `boto3`, `supabase`, `python-dotenv`, `ffmpeg-python`
   - Load cùng `.env.local` cho credentials
   - Kết quả: `python worker/main.py` chạy không có lỗi import
   - Ước tính: 30 phút
 
-- [ ] **3.2 — Tải video gốc từ R2**
+- [x] **3.2 — Tải video gốc từ R2**
   - `uploader.py`: `download_video(job_id, dest_path)` dùng boto3
   - Stream download để tránh vấn đề bộ nhớ với file lớn
   - Kết quả: File test 500MB tải thành công
   - Ước tính: 1 giờ
   - Phụ thuộc: 3.1
 
-- [ ] **3.3 — Nhận diện rally (motion-based v1)**
+- [x] **3.3 — Nhận diện rally (motion-based v1)**
   - `detector.py`: tiếp cận OpenCV frame-diff trước (nhanh hơn để implement)
   - Lấy mẫu ở 2fps, tính độ lớn sai khác giữa các frame
   - Phân loại là RALLY khi diff > ngưỡng trong ≥ 1s
@@ -113,35 +113,35 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Ước tính: 3–4 giờ
   - Phụ thuộc: 3.1
 
-- [ ] **3.4 — Nhận diện rally (YOLO v2, nâng cấp tuỳ chọn)**
+- [ ] **3.4 — Nhận diện rally (YOLO v2, nâng cấp tuỳ chọn)** *(bỏ qua cho MVP)*
   - Load `yolov8n.pt`, detect class 32 (sports ball) và class 0 (person)
   - Dùng sự hiện diện của bóng + chuyển động người làm tín hiệu mạnh hơn
   - Chỉ bật nếu độ chính xác motion-based v1 < 80%
   - Ước tính: thêm 2–3 giờ
   - Phụ thuộc: 3.3
 
-- [ ] **3.5 — Trích xuất clip bằng FFmpeg**
+- [x] **3.5 — Trích xuất clip bằng FFmpeg**
   - `splitter.py`: với mỗi segment gọi FFmpeg để trích xuất clip
   - Dùng `-c copy` (không re-encode) cho tốc độ; fallback re-encode nếu seek không chính xác
   - Tạo thumbnail bằng `ffmpeg -ss {mid} -frames:v 1 thumb.jpg`
   - Ước tính: 2 giờ
   - Phụ thuộc: 3.3
 
-- [ ] **3.6 — Upload clip lên R2**
+- [x] **3.6 — Upload clip lên R2**
   - PUT mỗi clip lên `rallies-clips/{job_id}/{index:03d}.mp4`
   - PUT mỗi thumbnail lên `rallies-clips/{job_id}/{index:03d}.jpg`
   - Dùng public bucket URL cho clip
   - Ước tính: 1 giờ
   - Phụ thuộc: 3.5
 
-- [ ] **3.7 — Cập nhật Supabase với kết quả**
+- [x] **3.7 — Cập nhật Supabase với kết quả**
   - Chèn rows vào bảng `clips` (clip_index, start_sec, end_sec, clip_key, thumbnail_key, share_token)
   - Cập nhật `jobs.status = 'done'`, `jobs.clip_count = n`
   - Khi có exception: cập nhật `jobs.status = 'failed'`, `jobs.error_msg`
   - Ước tính: 1 giờ
   - Phụ thuộc: 3.6, 1.2
 
-- [ ] **3.8 — Vòng lặp poll**
+- [x] **3.8 — Vòng lặp poll**
   - `main.py`: vòng lặp vô hạn, poll mỗi 10s cho job có `status = 'pending'`
   - Đặt job thành `processing` trước khi bắt đầu (tránh xử lý trùng lặp)
   - Log tiến trình ra stdout
