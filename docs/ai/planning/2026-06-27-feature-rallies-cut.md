@@ -29,7 +29,7 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Kết quả: `npm run dev` chạy không có lỗi, shadcn components import được
   - Ước tính: 45 phút
 
-- [ ] **1.2 — Tạo Supabase project + schema**
+- [x] **1.2 — Tạo Supabase project + schema**
   - Tạo project trên supabase.com (free tier)
   - Chạy migration: tạo bảng `jobs` và `clips` (xem design doc)
   - Bật Realtime trên bảng `jobs`
@@ -37,14 +37,14 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Kết quả: Các bảng tồn tại, RLS policies hoạt động
   - Ước tính: 1 giờ
 
-- [ ] **1.3 — Tạo Cloudflare R2 buckets**
+- [x] **1.3 — Tạo Cloudflare R2 buckets**
   - Bucket `rallies-raw` (private)
   - Bucket `rallies-clips` (public — bật public access)
   - Tạo R2 API token (read+write) cho worker và Next.js server
   - Kết quả: Có thể PUT/GET objects qua boto3 hoặc S3 SDK
   - Ước tính: 30 phút
 
-- [ ] **1.4 — Cấu hình biến môi trường**
+- [x] **1.4 — Cấu hình biến môi trường**
   - `.env.local` với: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_URL`
   - Thêm `.env.local` vào `.gitignore`
   - Kết quả: Tất cả env vars truy cập được trong Next.js và Python worker
