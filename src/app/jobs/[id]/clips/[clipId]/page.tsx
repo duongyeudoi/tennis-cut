@@ -26,17 +26,15 @@ function formatTimecode(sec: number): string {
 export default async function ClipEditorPage({ params }: Props) {
   const { id: jobId, clipId } = await params;
 
-  const { data } = await supabase
-    .from("clips")
-    .select("*")
-    .eq("id", clipId)
-    .eq("job_id", jobId)
-    .single();
+  const [{ data: clipData }, { data: jobData }] = await Promise.all([
+    supabase.from("clips").select("*").eq("id", clipId).eq("job_id", jobId).single(),
+    supabase.from("jobs").select("raw_video_key").eq("id", jobId).single(),
+  ]);
 
-  if (!data) notFound();
-  const clip = data as Clip;
+  if (!clipData || !jobData) notFound();
+  const clip = clipData as Clip;
 
-  const rawVideoUrl = await getRawVideoPresignedUrl(jobId);
+  const rawVideoUrl = await getRawVideoPresignedUrl(jobData.raw_video_key);
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8 space-y-5">

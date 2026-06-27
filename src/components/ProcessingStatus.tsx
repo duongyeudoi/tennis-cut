@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Job, JobStatus } from "@/types/database";
@@ -32,10 +33,18 @@ interface Props {
 export function ProcessingStatus({ job: initialJob, onDone }: Props) {
   const [job, setJob] = useState<Job>(initialJob);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const [retrying, setRetrying] = useState(false);
+
+  async function handleRetry() {
+    setRetrying(true);
+    await fetch(`/api/jobs/${job.id}/retry`, { method: "POST" });
+    setJob((j) => ({ ...j, status: "pending", error_msg: null }));
+    setRetrying(false);
+  }
 
   // Realtime subscription theo dõi thay đổi job
   useEffect(() => {
-    if (job.status === "done" || job.status === "failed") return;
+    if (job.status === "done") return;
 
     const channel = supabase
       .channel(`job-${job.id}`)
@@ -95,10 +104,33 @@ export function ProcessingStatus({ job: initialJob, onDone }: Props) {
         </p>
       )}
 
-      {job.status === "failed" && job.error_msg && (
-        <Alert variant="destructive">
-          <AlertDescription>{job.error_msg}</AlertDescription>
-        </Alert>
+      {job.status === "processing" && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRetry}
+          disabled={retrying}
+        >
+          {retrying ? "Đang hủy..." : "Hủy"}
+        </Button>
+      )}
+
+      {job.status === "failed" && (
+        <div className="space-y-3">
+          {job.error_msg && (
+            <Alert variant="destructive">
+              <AlertDescription>{job.error_msg}</AlertDescription>
+            </Alert>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRetry}
+            disabled={retrying}
+          >
+            {retrying ? "Đang reset..." : "Thử lại"}
+          </Button>
+        </div>
       )}
     </div>
   );

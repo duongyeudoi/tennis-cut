@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python worker
+worker/.venv
+worker/__pycache__
+worker/*.pyc
+/tmp/rallies-cut

@@ -38,32 +38,51 @@ export default async function HomePage() {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-12 space-y-10">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Rallies Cut</h1>
-        <p className="text-muted-foreground">
-          Upload video trận đấu — AI tự động cắt các đoạn rally và loại bỏ dead time
+      {/* Hero */}
+      <div className="space-y-3">
+        <div className="flex items-end gap-3">
+          <h1 className="text-7xl leading-none tracking-wider uppercase">
+            Rallies
+          </h1>
+          <span
+            className="text-7xl leading-none tracking-wider uppercase"
+            style={{ color: "var(--sport)" }}
+          >
+            Cut
+          </span>
+        </div>
+        <p className="text-muted-foreground text-base font-medium uppercase tracking-widest">
+          AI tự động cắt rally · Loại bỏ dead time
         </p>
+        <div
+          className="h-0.5 w-16"
+          style={{ background: "var(--sport)" }}
+        />
       </div>
 
       <VideoUpload />
 
       {recentJobs.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            Video gần đây
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            Buổi gần đây
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {recentJobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-                  <CardContent className="flex items-center justify-between py-3 px-4">
+                <Card className="hover:bg-muted/50 transition-colors cursor-pointer border-border/60">
+                  <CardContent className="flex items-center justify-between py-4 px-5">
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-semibold tracking-tight">
                         {(job.metadata as { filename?: string }).filename ?? "Video"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(job.created_at).toLocaleString("vi-VN")}
-                        {job.clip_count != null && ` · ${job.clip_count} rally`}
+                        {job.clip_count != null && (
+                          <span className="ml-2 font-semibold" style={{ color: "var(--sport)" }}>
+                            {job.clip_count} rally
+                          </span>
+                        )}
                       </p>
                     </div>
                     <Badge variant={statusVariant[job.status]}>

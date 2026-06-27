@@ -6,9 +6,10 @@ interface Props {
   src: string;
   className?: string;
   autoPlay?: boolean;
+  onEnded?: () => void;
 }
 
-export function VideoPlayer({ src, className, autoPlay = false }: Props) {
+export function VideoPlayer({ src, className, autoPlay = false, onEnded }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
 
   // Phím tắt: space = play/pause, ← → = ±5s
@@ -40,6 +41,7 @@ export function VideoPlayer({ src, className, autoPlay = false }: Props) {
       src={src}
       controls
       autoPlay={autoPlay}
+      onEnded={onEnded}
       tabIndex={0}
       className={`w-full rounded-lg bg-black outline-none ${className ?? ""}`}
     />

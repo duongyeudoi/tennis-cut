@@ -17,11 +17,10 @@ _s3 = boto3.client(
 )
 
 
-def download_video(job_id: str, dest: Path) -> Path:
-    """Tải raw video về máy local, trả về path đã lưu."""
-    key = f"raw/{job_id}/original.mp4"
-    log.info(f"Đang tải {key} → {dest}")
-    _s3.download_file(config.BUCKET_RAW, key, str(dest))
+def download_video(raw_video_key: str, dest: Path) -> Path:
+    """Tải raw video về máy local. raw_video_key lấy từ cột jobs.raw_video_key."""
+    log.info(f"Đang tải {raw_video_key} → {dest}")
+    _s3.download_file(config.BUCKET_RAW, raw_video_key, str(dest))
     log.info(f"Tải xong: {dest.stat().st_size / 1e6:.1f} MB")
     return dest
 
