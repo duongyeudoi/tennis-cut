@@ -8,12 +8,12 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
 
 ## Milestones
 
-- [ ] **M1 — Scaffold dự án & hạ tầng** — Next.js app + Supabase schema + R2 buckets kết nối xong
-- [ ] **M2 — Luồng upload** — Upload kéo thả lên R2 với tiến trình, job được tạo trong DB
+- [x] **M1 — Scaffold dự án & hạ tầng** — Next.js app + Supabase schema + R2 buckets kết nối xong
+- [x] **M2 — Luồng upload** — Upload kéo thả lên R2 với tiến trình, job được tạo trong DB
 - [ ] **M3 — Python worker chạy local** — Poll jobs, nhận diện rally với OpenCV/YOLO, cắt bằng FFmpeg, upload clip
-- [ ] **M4 — Gallery rally & player** — Xem clip đã xử lý trên trình duyệt, cập nhật trạng thái realtime
-- [ ] **M5 — Chia sẻ qua link** — Trang chia sẻ công khai cho một rally, không cần đăng nhập
-- [ ] **M6 — Clip editor** — Chỉnh sửa in/out point thủ công với ngữ cảnh footage gốc, worker cắt lại
+- [x] **M4 — Gallery rally & player** — Xem clip đã xử lý trên trình duyệt, cập nhật trạng thái realtime
+- [x] **M5 — Chia sẻ qua link** — Trang chia sẻ công khai cho một rally, không cần đăng nhập
+- [x] **M6 — Clip editor** — Chỉnh sửa in/out point thủ công với ngữ cảnh footage gốc, worker cắt lại
 - [ ] **M7 — Hoàn thiện & tự kiểm tra** — Test end-to-end với footage trận thật, tinh chỉnh ngưỡng nhận diện
 
 ---
@@ -154,7 +154,7 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
 
 ### M4 — Gallery rally & Player
 
-- [ ] **4.1 — Trang trạng thái job**
+- [x] **4.1 — Trang trạng thái job**
   - `app/jobs/[id]/page.tsx`
   - Subscribe Supabase Realtime trên row `jobs`
   - Hiển thị spinner + text trạng thái khi `pending` / `processing`
@@ -162,21 +162,21 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Ước tính: 2 giờ
   - Phụ thuộc: 1.2, M2
 
-- [ ] **4.2 — Component RallyGallery**
+- [x] **4.2 — Component RallyGallery**
   - `RallyGallery.tsx`: lưới card clip
   - Mỗi card: thumbnail, thời lượng, số thứ tự rally, nút chia sẻ
   - Tải clip từ Supabase khi job status = `done`
   - Ước tính: 2 giờ
   - Phụ thuộc: 4.1, M3
 
-- [ ] **4.3 — Video player trên trình duyệt**
+- [x] **4.3 — Video player trên trình duyệt**
   - `VideoPlayer.tsx`: thẻ `<video>` native với controls
   - Lấy presigned GET URL cho clip private HOẶC dùng public URL
   - Phím tắt: space = play/pause, trái/phải = ±5s
   - Ước tính: 1–2 giờ
   - Phụ thuộc: 4.2
 
-- [ ] **4.4 — Route presigned clip URL**
+- [x] **4.4 — Route presigned clip URL**
   - `GET /api/clip-url?key=x` → presigned GET URL (hết hạn sau 1 giờ)
   - Chỉ cho clip trong bucket private (nếu thêm chế độ private sau)
   - MVP, bucket clip là public — không cần presigned URL
@@ -188,7 +188,7 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
 
 ### M5 — Chia sẻ qua link
 
-- [ ] **5.1 — Trang chia sẻ công khai**
+- [x] **5.1 — Trang chia sẻ công khai**
   - `app/share/[token]/page.tsx`
   - Server component: query Supabase tìm clip theo `share_token`
   - Render `VideoPlayer` + metadata clip (số rally, thời lượng, ngày)
@@ -196,13 +196,13 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Ước tính: 1–2 giờ
   - Phụ thuộc: M3 (share_token được tạo khi chèn clip)
 
-- [ ] **5.2 — UI sao chép link chia sẻ**
+- [x] **5.2 — UI sao chép link chia sẻ**
   - Trong card `RallyGallery`: nút "Chia sẻ" copy `https://yourapp.com/share/{token}` vào clipboard
   - Toast thông báo khi copy
   - Ước tính: 30 phút
   - Phụ thuộc: 4.2, 5.1
 
-- [ ] **5.3 — Deploy lên Vercel**
+- [x] **5.3 — Deploy lên Vercel**
   - `vercel deploy` (free hobby plan)
   - Đặt biến môi trường trong Vercel dashboard
   - Kết quả: URL công khai truy cập được, share link hoạt động
@@ -215,7 +215,7 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
 
 ### M6 — Clip Editor
 
-- [ ] **6.1 — Cập nhật DB schema: thêm cột editor vào `clips`**
+- [x] **6.1 — Cập nhật DB schema: thêm cột editor vào `clips`**
   - Thêm `ai_start_sec`, `ai_end_sec` (giá trị AI bất biến)
   - Thêm cột `edit_status` (`original` | `pending_recut` | `recut`)
   - Thêm cột `updated_at`
@@ -224,14 +224,14 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Ước tính: 30 phút
   - Phụ thuộc: 1.2
 
-- [ ] **6.2 — Route presigned URL video gốc**
+- [x] **6.2 — Route presigned URL video gốc**
   - `GET /api/raw-url?job_id=x` → presigned GET URL cho `rallies-raw/{job_id}/original.mp4`
   - Hết hạn: 2 giờ (đủ cho một phiên chỉnh sửa)
   - Kết quả: Trình duyệt có thể stream video gốc từ R2
   - Ước tính: 30 phút
   - Phụ thuộc: 1.3, 1.4
 
-- [ ] **6.3 — Component TrimTimeline**
+- [x] **6.3 — Component TrimTimeline**
   - Scrubber nằm ngang hiển thị cửa sổ ±30s căn giữa theo bounds clip hiện tại
   - Tay cầm kéo IN (trái) và OUT (phải)
   - Khi kéo: seek `<video>` đến vị trí đó trong footage gốc
@@ -241,21 +241,21 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Ước tính: 3–4 giờ
   - Phụ thuộc: 6.2
 
-- [ ] **6.4 — Component TimecodeDisplay**
+- [x] **6.4 — Component TimecodeDisplay**
   - Hiển thị `HH:MM:SS.f` của vị trí video hiện tại trong footage gốc
   - Cập nhật theo sự kiện `timeupdate` (throttled 100ms)
   - Hiển thị nhãn riêng: "▶ VÀO 00:23:44.1" và "RA 00:23:58.3 ◀"
   - Ước tính: 1 giờ
   - Phụ thuộc: 6.3
 
-- [ ] **6.5 — Component SourcePlayer**
+- [x] **6.5 — Component SourcePlayer**
   - `<video>` native tải với presigned raw URL
   - `currentTime` đồng bộ với vị trí scrubber
   - Chỉ phát trong khoảng in/out bounds (dừng ở out-point, auto-loop nếu người dùng giữ play)
   - Ước tính: 1–2 giờ
   - Phụ thuộc: 6.2
 
-- [ ] **6.6 — EditControls + luồng Lưu**
+- [x] **6.6 — EditControls + luồng Lưu**
   - Nút Lưu: PATCH `clips/{id}` — `{start_sec, end_sec, edit_status: 'pending_recut'}`
   - Reset về AI: đặt `start_sec = ai_start_sec`, `end_sec = ai_end_sec`
   - Huỷ: điều hướng về gallery không lưu
@@ -263,7 +263,7 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Ước tính: 1.5 giờ
   - Phụ thuộc: 6.3, 6.4, 6.5
 
-- [ ] **6.7 — Trang clip editor**
+- [x] **6.7 — Trang clip editor**
   - Route: `app/jobs/[id]/clips/[clipId]/page.tsx`
   - Ghép: SourcePlayer + TrimTimeline + TimecodeDisplay + EditControls
   - Hiển thị header metadata clip: Rally #N, bounds AI, bounds hiện tại, thời lượng
@@ -271,7 +271,7 @@ description: Danh sách task MVP cho rallies-cut — upload web, xử lý AI loc
   - Ước tính: 1 giờ
   - Phụ thuộc: 6.3–6.6
 
-- [ ] **6.8 — Worker: hàm recut_clip**
+- [x] **6.8 — Worker: hàm recut_clip**
   - Poll cho clip có `edit_status = 'pending_recut'` (cùng vòng lặp với full jobs)
   - Chỉ tải xuống cửa sổ cần thiết: `ffmpeg -ss {start-5} -t {end-start+10} -i original.mp4` (tránh tải cả video)
   - Cắt lại với `start_sec`/`end_sec` mới, re-upload vào cùng R2 key (ghi đè)
