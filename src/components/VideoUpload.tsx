@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 
-const ACCEPTED_TYPES = ["video/mp4", "video/quicktime", "video/x-msvideo"];
+const ACCEPTED_TYPES = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/x-m4v"];
 const MAX_SIZE_GB = 10;
 const MAX_SIZE_BYTES = MAX_SIZE_GB * 1024 ** 3;
 
@@ -116,7 +116,7 @@ export function VideoUpload() {
         <input
           ref={inputRef}
           type="file"
-          accept=".mp4,.mov,.avi"
+          accept=".mp4,.mov,.avi,.m4v"
           className="hidden"
           onChange={onFileChange}
         />
