@@ -20,47 +20,51 @@ except ImportError:
 
 
 PROMPT = """ROLE
-You are an expert tennis analyst. Watch the attached video and identify every individual point of live play so the footage can be cut into rally clips with ffmpeg.
+You are an expert tennis analyst. Your job is to watch the ENTIRE video from start to finish and find every single point of live play so the footage can be cut into rally clips.
 
 RECORDING CONTEXT
 - Single FIXED camera covering the full court. ONE continuous shot — no broadcast cuts, replays, or studio segments.
 - Amateur Vietnamese players. Informal pacing; players self-call lines and chat in Vietnamese between points.
 - May be singles or doubles — the segmentation rules are the same either way.
 
+STEP 1 — SCAN THE FULL TIMELINE
+Before writing any output, mentally scan the video from 0:00 to the very end. Note every moment where a serve motion begins. There will be many — do not stop after finding a few.
+
 WHAT COUNTS AS ONE RALLY (= one point of live play)
 - Starts: when the server begins the serve motion / ball toss that starts the point.
 - Ends: the instant the ball is dead — out, hits the net and stops, or bounces twice unreturned.
-- If the first serve faults, do NOT clip the fault alone. The clip starts from the serve that actually plays the point.
-- ONE point = ONE clip. Do NOT merge consecutive points into one clip.
+- If the first serve faults, the clip starts from the next serve that actually plays the point.
+- ONE point = ONE clip. NEVER merge two consecutive points into one clip.
 
 HOW TO FIND THE BOUNDARIES
-- PRIMARY cue (most reliable): serve toss → ball in motion → players stop and reset. Trust your eyes.
-- SECONDARY cue: audio "pock" of ball strikes; Vietnamese line calls — "ra" (out), "lỗi" (fault), "vào/tốt" (in), "net/chạm" (let).
-- IGNORE casual chat, laughter, counting, coaching talk between points — those do not mark a boundary.
+- PRIMARY cue: serve toss → ball in motion → players stop and reset.
+- SECONDARY cue: audio "pock" of ball strikes; Vietnamese calls — "ra" (out), "lỗi" (fault), "vào/tốt" (in), "net/chạm" (let).
+- Each "ra", "lỗi", "vào", "tốt" typically marks the END of a rally — the NEXT rally starts soon after.
 
 EXCLUDE from all clips
-- Walking, ball-retrieval, bouncing ball before serve, toweling off, chatting between points.
-- Warm-up, practice feeds, changeovers, any stretch where no live point is being played.
+- Walking, ball-retrieval, bouncing ball before serve, toweling off, chatting, coaching.
+- Warm-up, practice feeds, changeovers.
 
 TIMESTAMP & PADDING
-- Express times as seconds from the start of the video, with 3 decimal places (e.g. 253.400).
-- Add ~1.0 s lead-in before the serve motion and ~1.5 s lead-out after the ball dies.
-- When unsure of an exact boundary, be conservative — a little extra is better than clipping the action.
+- Express as decimal seconds (e.g. 253.400).
+- Add ~1.0 s lead-in before serve motion and ~1.5 s lead-out after ball dies.
+- When unsure, be conservative — extra padding is better than clipping the action.
 
-SCALE CHECK (important)
-- A 20-minute amateur match typically contains 30–80 points.
-- A 10-minute clip typically contains 15–40 points.
-- If your output has fewer than 10 clips for a 20-minute video, you are almost certainly merging points or missing rallies — recount.
+SCALE CHECK — read this carefully
+- A 15-minute amateur match has roughly 25–60 points.
+- A 10-minute clip has roughly 15–40 points.
+- If you are returning fewer than 20 clips for a 15-minute video, you are DEFINITELY missing rallies.
+- Common mistake: merging 3–5 consecutive points into one long "clip". Do NOT do this.
+- Another common mistake: stopping after finding a few clips and ignoring the rest of the video. Scan ALL the way to the end.
 
-OUTPUT
-Return ONLY a valid JSON array, no prose, no markdown fences:
+OUTPUT FORMAT
+Return ONLY a JSON array. No prose, no markdown, no explanation:
 [
   {"start": 12.500, "end": 28.000, "confidence": 0.95},
   {"start": 45.200, "end": 67.800, "confidence": 0.80}
 ]
-
-- Sort by start ascending. No overlapping clips. Minimum clip length 5.0 s.
-- If a segment is uncertain but looks like a rally, include it with confidence < 0.5 rather than dropping it.
+Rules: sort by start ascending, no overlapping clips, minimum clip 4.0 s.
+If uncertain, include with confidence < 0.5 rather than omitting.
 """
 
 
@@ -177,7 +181,8 @@ def detect_rallies_gemini(video_path: Path) -> list[tuple[float, float]] | None:
             ],
             config=types.GenerateContentConfig(
                 temperature=0,
-                response_mime_type="application/json",
+                thinking_config=types.ThinkingConfig(thinking_budget=8000),
+                max_output_tokens=32768,
             ),
         )
     finally:
@@ -185,7 +190,7 @@ def detect_rallies_gemini(video_path: Path) -> list[tuple[float, float]] | None:
 
     # 4. Parse response
     raw = response.text.strip()
-    log.info(f"Gemini raw response ({len(raw)} ký tự), 500 đầu: {raw[:500]}")
+    log.info(f"Gemini raw response ({len(raw)} ký tự):\n{raw[:2000]}")
 
     try:
         items = _parse_response(raw)
